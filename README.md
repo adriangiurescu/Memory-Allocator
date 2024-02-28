@@ -10,11 +10,11 @@ Build a minimalistic memory allocator that can be used to manually manage virtua
 
 API:
 
-    void \*os_malloc(size_t size)
+    void *os_malloc(size_t size)
 
 Allocates size bytes and returns a pointer to the allocated memory. Chunks of memory smaller than MMAP_THRESHOLD are allocated with brk(). Bigger chunks are allocated using mmap(). The memory is uninitialized. Passing 0 as size will return NULL.
 
-    void \*os_calloc(size_t nmemb, size_t size)
+    void *os_calloc(size_t nmemb, size_t size)
 
 Allocates memory for an array of nmemb elements of size bytes each and returns a pointer to the allocated memory. Chunks of memory smaller than page_size are allocated with brk(). Bigger chunks are allocated using mmap(). The memory is set to zero. Passing 0 as nmemb or size will return NULL.
 
