@@ -29,9 +29,10 @@ Frees memory previously allocated by os_malloc(), os_calloc() or os_realloc(). o
 Implementation:
 
 An efficient implementation must keep data aligned, keep track of memory blocks and reuse freed blocks. This can be further improved by reducing the number of syscalls and block operations.
+
 Memory Alignment Allocated memory should be aligned (i.e. all addresses are multiple of a given size). This is a space-time trade-off because memory blocks are padded so each can be read in one transaction. It also allows for atomicity when interacting with a block of memory. All memory allocations should be aligned to 8 bytes as required by 64 bit systems.
 
-    Block Reuse struct block_meta We will consider a block to be a continuous zone of memory, allocated and managed by our implementation. The structure block_meta will be used to manage the metadata of a block. Each allocated zone will comprise of a block_meta structure placed at the start, followed by data (payload). For all functions, the returned address will be that of the payload (not of the block_meta structure).
+Block Reuse struct block_meta We will consider a block to be a continuous zone of memory, allocated and managed by our implementation. The structure block_meta will be used to manage the metadata of a block. Each allocated zone will comprise of a block_meta structure placed at the start, followed by data (payload). For all functions, the returned address will be that of the payload (not of the block_meta structure).
 
 struct block_meta { size_t size; int status; struct block_meta *prev; struct block_meta *next; };
 
