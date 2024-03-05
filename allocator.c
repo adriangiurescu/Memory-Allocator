@@ -204,6 +204,32 @@ void *os_malloc(size_t size) {
     return block + 1;
 }
 
+void os_free(void *ptr) {
+    if (!ptr) {
+        return;
+    }
+    struct block_meta *block_ptr = get_block_ptr(ptr), *prev = NULL,
+                      *next = NULL;
+    size_t size = block_ptr->size;
+    prev = block_ptr->prev;
+    next = block_ptr->next;
+    void *adjusted_ptr = (void *)((uintptr_t)ptr - METADATA_SIZE);
+    if (block_ptr->status == STATUS_MAPPED) {
+        if (prev && next) {
+            prev->next = next;
+            prev->next->prev = prev;
+            prev->size += ALIGN(size + METADATA_SIZE);
+        } else if (prev) {
+            prev->next = NULL;
+            prev->size += ALIGN(size + METADATA_SIZE);
+        }
+        munmap((char *)adjusted_ptr, ALIGN(size + METADATA_SIZE));
+    } else {
+        block_ptr->status = STATUS_FREE;
+        merge_blocks(block_ptr);
+    }
+}
+
 void *os_calloc(size_t nelem, size_t elsize) {
     size_t page_size = getpagesize();
     size_t size = nelem * elsize;
@@ -347,30 +373,4 @@ void *os_realloc(void *ptr, size_t size) {
         }
     }
     return block + 1;
-}
-
-void os_free(void *ptr) {
-    if (!ptr) {
-        return;
-    }
-    struct block_meta *block_ptr = get_block_ptr(ptr), *prev = NULL,
-                      *next = NULL;
-    size_t size = block_ptr->size;
-    prev = block_ptr->prev;
-    next = block_ptr->next;
-    void *adjusted_ptr = (void *)((uintptr_t)ptr - METADATA_SIZE);
-    if (block_ptr->status == STATUS_MAPPED) {
-        if (prev && next) {
-            prev->next = next;
-            prev->next->prev = prev;
-            prev->size += ALIGN(size + METADATA_SIZE);
-        } else if (prev) {
-            prev->next = NULL;
-            prev->size += ALIGN(size + METADATA_SIZE);
-        }
-        munmap((char *)adjusted_ptr, ALIGN(size + METADATA_SIZE));
-    } else {
-        block_ptr->status = STATUS_FREE;
-        merge_blocks(block_ptr);
-    }
 }
